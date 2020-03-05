@@ -1,12 +1,12 @@
 const { GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLID, GraphQLInt, GraphQLList } = require('graphql');
-
+const { Book, StudentsM } = require("./dbschema")
 
 
 // Students have many books
 const Students = [
-  { name: "jonathan", course: "Anatomy", amount: 40000, id: "1", booksID:["1", "2"] },
-  { name: "Elizabeth", course: "Mcb", amount: 45000, id: "2", booksID:["3", "2"]  },
-  { name: "jeffery", course: "BioChem", amount: 90000, id: "3", booksID:["3", "1"]  },
+  { name: "jonathan", course: "Anatomy", amount: 40000, id: "1", booksID: ["1", "2"] },
+  { name: "Elizabeth", course: "Mcb", amount: 45000, id: "2", booksID: ["3", "2"] },
+  { name: "jeffery", course: "BioChem", amount: 90000, id: "3", booksID: ["3", "1"] },
 ]
 
 
@@ -27,7 +27,6 @@ const BookType = new GraphQLObjectType({
     student: {
       type: StudentType,
       resolve(parent, arg) {
-        // console.log(parent)
         return Students.find(e => {
           return parent.StudentIds === e.id
         })
@@ -43,12 +42,12 @@ const StudentType = new GraphQLObjectType({
     name: { type: GraphQLString },
     course: { type: GraphQLString },
     amount: { type: GraphQLInt },
-    book:{
+    book: {
       type: GraphQLList(BookType),
-      resolve(parent, args){
+      resolve(parent, args) {
         let result = []
         parent.booksID.forEach((e, i) => {
-          if (e === Books[i].id){
+          if (e === Books[i].id) {
             result.push(Books[i])
           }
         });
@@ -80,11 +79,61 @@ const RootQuery = new GraphQLObjectType({
           return e.id === id
         })
       }
+    },
+    books: {
+      type: GraphQLList(BookType),
+      resolve() {
+        return Books
+      }
+    },
+    students: {
+      type: GraphQLList(StudentType),
+      resolve() {
+        return Students
+      }
+    }
+  }
+})
+
+
+const Mutation = new GraphQLObjectType({
+  name: "Mutation",
+  fields: {
+    addStudent: {
+      type: StudentType,
+      args: {
+        name: { type: GraphQLString },
+        course: { type: GraphQLString },
+        amount: { type: GraphQLString }
+      },
+      resolve(parent, args) {
+        const { name, course, amount } = args
+        let id = Students.length + 1
+        let student = new StudentsM(name, course, amount, id);
+        Students.push(student)
+        return student
+      }
+    },
+    addBooks:{
+      type: BookType,
+      args:{
+        name:{ type: GraphQLString}, 
+        genre:{type: GraphQLString}, 
+        StudentIds:{type:GraphQLString },
+      },
+      resolve(parent, args){
+        const {name, genre, StudentIds} = args
+        let id = Books.length + 1
+        let book = new Book(name, genre, StudentIds, id)
+        Books.push(book)
+        return book
+      }
     }
   }
 })
 
 
 module.exports = new GraphQLSchema({
-  query: RootQuery
+  query: RootQuery,
+  mutation: Mutation
 })
