@@ -1,4 +1,4 @@
-const { GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLID, GraphQLInt, GraphQLList } = require('graphql');
+const { GraphQLObjectType, GraphQLString, GraphQLSchema,GraphQLNonNull, GraphQLID, GraphQLInt, GraphQLList } = require('graphql');
 const { Book, StudentsM } = require("./dbschema")
 
 
@@ -102,9 +102,9 @@ const Mutation = new GraphQLObjectType({
     addStudent: {
       type: StudentType,
       args: {
-        name: { type: GraphQLString },
-        course: { type: GraphQLString },
-        amount: { type: GraphQLString }
+        name: { type: new GraphQLNonNull (GraphQLString) },
+        course: { type: new GraphQLNonNull (GraphQLString) },
+        amount: { type: new GraphQLNonNull (GraphQLString) }
       },
       resolve(parent, args) {
         const { name, course, amount } = args
